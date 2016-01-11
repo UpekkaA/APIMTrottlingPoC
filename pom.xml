@@ -27,13 +27,15 @@
             <scope>compile</scope>
             <version>${siddhi.version}</version>
         </dependency>
-        <!--
+
         <dependency>
             <groupId>org.apache.log4j.wso2</groupId>
             <artifactId>log4j</artifactId>
             <scope>compile</scope>
             <version>${log4j.version}</version>
         </dependency>
+
+        <!--
         <dependency>
             <groupId>org.antlr</groupId>
             <artifactId>antlr4-runtime</artifactId>
