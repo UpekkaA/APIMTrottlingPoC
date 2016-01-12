@@ -16,23 +16,56 @@ public class RuleTest {
         SiddhiManager siddhiManager = new SiddhiManager();
         Throttler throttler=new Throttler();
 
-        String ruleQuery = throttler.addRule("bronze","10.100.4.125","10.100.4.129","GET",3,60000,1,60000);
-        String executionPlan ="define stream RequestStream (messageID string, app_key string, api_key string, resource_key string, app_tier string, api_tier string, resource_tier string, ip_address string, http_method string); "+ ruleQuery;
-        //Generating runtime
-        ExecutionPlanRuntime executionPlanRuntime = siddhiManager.createExecutionPlanRuntime(executionPlan);
+        //String executionPlan ="define stream RequestStream (messageID string, app_key string, api_key string, resource_key string, app_tier string, api_tier string, resource_tier string, ip_address string, http_method string); ";
+        throttler.addRule("app","bronze","10.100.4.125","10.100.4.129","GET",3,60000,100,60000);
+        throttler.addRule("api","silver","10.100.4.125","10.100.4.129","GET",4,60000,100,60000);
+        throttler.addRule("resource","gold","10.100.4.125","10.100.4.129","GET",5,60000,100,60000);
 
-        //Adding callback to retrieve output events from query
-        executionPlanRuntime.addCallback("query1", new QueryCallback() {
+       ExecutionPlanRuntime executionPlanRuntime = throttler.doThrottling();
+
+        //Adding callback to retrieve output events from query - APP level
+        executionPlanRuntime.addCallback("query1_app_bronze", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                EventPrinter.print(timeStamp, inEvents, removeEvents);
+                EventPrinter.print(inEvents);
             }
         });
 
-        executionPlanRuntime.addCallback("query2", new QueryCallback() {
+        executionPlanRuntime.addCallback("query2_app_bronze", new QueryCallback() {
             @Override
             public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
-                EventPrinter.print(timeStamp, inEvents, removeEvents);
+                EventPrinter.print(inEvents);
+            }
+        });
+
+
+        //Adding callback to retrieve output events from query - API level
+        executionPlanRuntime.addCallback("query1_api_silver", new QueryCallback() {
+            @Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                EventPrinter.print(inEvents);
+            }
+        });
+
+        executionPlanRuntime.addCallback("query2_api_silver", new QueryCallback() {
+            @Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                EventPrinter.print(inEvents);
+            }
+        });
+
+        //Adding callback to retrieve output events from query - Resource level
+        executionPlanRuntime.addCallback("query1_resource_gold", new QueryCallback() {
+            @Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                EventPrinter.print(inEvents);
+            }
+        });
+
+        executionPlanRuntime.addCallback("query2_resource_gold", new QueryCallback() {
+            @Override
+            public void receive(long timeStamp, Event[] inEvents, Event[] removeEvents) {
+                EventPrinter.print(inEvents);
             }
         });
 
@@ -43,12 +76,12 @@ public class RuleTest {
         executionPlanRuntime.start();
 
         //Sending events to Siddhi
-        requestinputHandler.send(new Object[]{"msg1","app1","api1","res1","bronze","Silver","Gold","10.100.4.125","GET"});
-        requestinputHandler.send(new Object[]{"msg2","app1","api1","res1","bronze","Silver","Gold","10.100.4.125","GET"});
-        requestinputHandler.send(new Object[]{"msg3","app2","api1","res1","bronze","Silver","Gold","10.100.4.125","GET"});
-        requestinputHandler.send(new Object[]{"msg4","app2","api2","res2","bronze","Silver","Gold","10.10.12","GET"});
-        requestinputHandler.send(new Object[]{"msg5","app3","api3","res3","bronze","Gold","Gold","10.10.10","GET"});
-        requestinputHandler.send(new Object[]{"msg6","app1","api1","res1","bronze","Silver","Gold","10.100.4.125","GET"});
+        requestinputHandler.send(new Object[]{"msg1","app1","api1","res1","bronze","silver","gold",174326909l,"GET"});
+        requestinputHandler.send(new Object[]{"msg2","app1","api1","res1","bronze","silver","gold",174326909l,"GET"});
+        requestinputHandler.send(new Object[]{"msg3","app1","api1","res1","bronze","silver","gold",174326909l,"GET"});
+        requestinputHandler.send(new Object[]{"msg4","app2","api1","res1","bronze","silver","gold",174326909l,"GET"});
+        requestinputHandler.send(new Object[]{"msg5","app3","api2","res1","bronze","gold","gold",174326909l,"GET"});
+        requestinputHandler.send(new Object[]{"msg6","app4","api3","res2","bronze","silver","gold",174326909l,"GET"});
 
         Thread.sleep(100);
 
